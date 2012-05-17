@@ -1,0 +1,107 @@
+devise
+
+      create  config/initializers/devise.rb
+      create  config/locales/devise.en.yml
+===============================================================================
+
+Some setup you must do manually if you haven't yet:
+
+  1. Ensure you have defined default url options in your environments files. Here 
+     is an example of default_url_options appropriate for a development environment 
+     in config/environments/development.rb:
+
+       config.action_mailer.default_url_options = { :host => 'localhost:3000' }
+
+     In production, :host should be set to the actual host of your application.
+
+  2. Ensure you have defined root_url to *something* in your config/routes.rb.
+     For example:
+
+       root :to => "home#index"
+
+  3. Ensure you have flash messages in app/views/layouts/application.html.erb.
+     For example:
+
+       <p class="notice"><%= notice %></p>
+       <p class="alert"><%= alert %></p>
+
+  4. If you are deploying Rails 3.1 on Heroku, you may want to set:
+
+       config.assets.initialize_on_precompile = false
+
+     On config/application.rb forcing your application to not access the DB
+     or load models when precompiling your assets.
+
+===============================================================================
+
+== Schema Information
+# Schema version: 20110412170916
+#
+# Table name: users
+#
+#  id                   :integer         not null, primary key
+#  email                :string(255)
+#  encrypted_password   :string(128)
+#  password_salt        :string(255)
+#  reset_password_token :string(255)
+#  remember_token       :string(255)
+#  remember_created_at  :datetime
+#  sign_in_count        :integer
+#  current_sign_in_at   :datetime
+#  last_sign_in_at      :datetime
+#  current_sign_in_ip   :string(255)
+#  last_sign_in_ip      :string(255)
+#  username             :string(255)
+#  first_name           :string(255)
+#  last_name            :string(255)
+#  created_at           :datetime
+#  updated_at           :datetime
+#  invitation_token     :string(60)
+#  invitation_sent_at   :datetime
+#  plan_id              :integer
+#  current_state        :string(255)
+#  confirmation_token   :string(255)
+#  confirmed_at         :datetime
+#  confirmation_sent_at :datetime
+#  space_used           :integer         default(0), not null
+#  failed_attempts      :integer         default(0)
+#  unlock_token         :string(255)
+#  locked_at            :datetime
+#  trial_end_date       :date
+#  active_subscription  :boolean
+#
+
+class User < ActiveRecord::Base
+    acts_as_voter
+  devise :database_authenticatable, :confirmable, :registerable, :timeoutable,
+         :recoverable, :rememberable, :trackable, :validatable, :invitable, :lockable
+
+
+  attr_accessible :email, :password, :password_confirmation, :remember_me, :username, :first_name, :last_name, :plan_id
+  has_friendly_id :username, :use_slug => true, :strip_non_ascii => true
+
+    before_save :update_space
+
+  has_many :uploads
+
+  def role_symbols
+    roles.map do |role|
+      role.name.underscore.to_sym
+    end
+  end
+
+  def update_space
+       total_size = 0
+         if self.uploads.count > 0
+           self.uploads.each do |upload|
+             total_size += upload[:image_file_size]
+           end
+         end
+    self.space_used = total_size
+  end
+
+    def space_left
+        (self.plan.storage * 1024 * 1024 * 1024) - self.space_used.to_f     
+    end
+
+end

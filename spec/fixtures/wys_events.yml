@@ -1,0 +1,19 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  location: MyString
+  coordinate: 
+  from: 2012-04-03 20:08:44
+  to: 2012-04-03 20:08:44
+  url: MyString
+  note: MyString
+  price: 1.5
+
+two:
+  location: MyString
+  coordinate: 
+  from: 2012-04-03 20:08:44
+  to: 2012-04-03 20:08:44
+  url: MyString
+  note: MyString
+  price: 1.5
